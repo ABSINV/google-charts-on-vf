@@ -1,0 +1,394 @@
+<apex:page controller="GoogleChartsController">
+
+	<script type="text/javascript" src="https://www.google.com/jsapi"></script>
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+    
+    <style>
+		body .bPageBlock .pbBody .pageBlockSection .pbSubheader {
+	    	background-color:#1797c0;
+	    }
+	    
+	    .textCenterStyle{
+	    	text-align: center;
+	    	margin-top: 1cm;
+	    }
+	    
+	    .chartheader tr > td {
+		    line-height: 11.5px;
+		    text-align : center;
+		}
+		
+		.chartheader {
+		    color          : black;
+		    font-size      : 8pt;
+		    left           : 58px;
+		    list-style-type: none;
+		    margin-left    : 0px;
+		    position       : relative;
+		    table-layout   : fixed;
+		    top            : 40px;
+		    width          : 80%;
+		}    
+	</style>
+	
+	<script type="text/javascript">
+	
+		google.load("visualization", "1", {packages:["corechart"]});
+		google.setOnLoadCallback(drawVisualization);
+		
+		function drawVisualization() {
+		
+			//draw combo charts
+			TestSimon.GoogleChartsController.getProcessedDataSetForComboChart(			
+				function(result, event) {
+					
+					//prepare data table with out formatting the tool tips
+					var dataTable1 = new google.visualization.DataTable();
+		            dataTable1.addColumn('string', 'Range');
+		            dataTable1.addColumn('number', 'Promoters');
+		            dataTable1.addColumn('number', 'Passives');
+		            dataTable1.addColumn('number', 'Detractors');
+		            dataTable1.addColumn('number', 'NPS');
+		            
+		            for(var i = 0; i < result.length; i++){
+			            var p = result[i]; 
+			            dataTable1.addRow([ p.chartLabel, p.value1, p.value2, p.value3 , p.core]);
+		        	}
+
+		        	var option1 = {
+						title : '',
+						width : 600,
+                    	height: 300,
+					    vAxes: {0: {logScale: false, maxValue: 100, minValue: 0},
+				                1: {logScale: false, maxValue: 100, minValue: -100}
+				               },
+				        seriesType: "bars",
+				        isStacked: true,    
+				        backgroundColor: 'transparent',
+				        series: {
+				        	0: { targetAxisIndex:0 }, 
+				            1: { targetAxisIndex:0 },
+		                    2: { targetAxisIndex:0 },
+		                    3: { targetAxisIndex:1, type: "line", visibleInLegend :false }
+		                 },
+		                 chartArea: {
+			                width: "80%",
+			                height: "85%"
+			             },
+	                     legend: { position: 'top', alignment : 'center'},
+	                     colors: ['#0075C2' , '#1AAF5D' , '#D43F3F', '#000000' ]
+					};
+					
+					var chart1 = new google.visualization.ComboChart(document.getElementById('comboChart1'));
+			  		chart1.draw(dataTable1, option1); 
+		        	
+		        	//prepare data table to support formatting the tool tips
+		        	var dataTable2 = new google.visualization.DataTable();
+		            dataTable2.addColumn('string', 'Range');
+		            dataTable2.addColumn('number', 'Promoters');
+		            dataTable2.addColumn({'type' : 'string', 'role': 'tooltip', 'p': {'html': true}});
+		            dataTable2.addColumn('number', 'Passives');
+		            dataTable2.addColumn({'type' : 'string', 'role': 'tooltip', 'p': {'html': true}});
+		            dataTable2.addColumn('number', 'Detractors');
+		            dataTable2.addColumn({'type' : 'string', 'role': 'tooltip', 'p': {'html': true}});
+		            dataTable2.addColumn('number', 'NPS');
+		            dataTable2.addColumn({'type' : 'string', 'role': 'tooltip', 'p': {'html': true}});
+		            
+		            for (var i = 0; i < result.length; i++){
+			            var p = result[i]; 
+			            dataTable2.addRow([
+			            	p.chartLabel , 
+			                p.value1 , '<div style="margin:10px;color:#000;"><strong>Promoters  : </strong>' + p.value1 + '</div>'  ,  
+			                p.value2 , '<div style="margin:10px;color:#000;"><strong>Passives   : </strong>' + p.value2 + '</div>'    ,  
+			                p.value3 , '<div style="margin:10px;color:#000;"><strong>Detractors : </strong>' + p.value3 + '</div>'  ,  
+			                p.core   , '<div style="margin:10px;color:#000;"><strong>NPS        : </strong>' + p.core   + '</div>'  
+		                ]);
+		        	}
+		        					
+					var option2 = {
+						title   : '',
+						tooltip : {isHtml: true},
+						width   : 600,
+                    	height  : 300,
+					    vAxes: {0: {logScale: false, maxValue: 100, minValue: 0, textStyle : { color: '#ffffff'}},
+				                1: {logScale: false, maxValue: 100, minValue: -100, textStyle : { color: '#ffffff'}}
+				               },
+				        seriesType: "bars",
+				        isStacked: true,
+				        backgroundColor: 'transparent',    
+				        series: {
+				        	0: { targetAxisIndex:0 }, 
+				            1: { targetAxisIndex:0 },
+		                    2: { targetAxisIndex:0 },
+		                    3: { targetAxisIndex:1, type: "line", visibleInLegend :false }
+		                 },
+		                 chartArea: {
+			                width: "80%",
+			                height: "85%"
+			             },
+	                     legend: { position: 'top', alignment : 'center'},
+	                     colors: ['#0075C2' , '#1AAF5D' , '#D43F3F', '#000000' ]
+					};
+			  		
+			  		var chart2 = new google.visualization.ComboChart(document.getElementById('comboChart2'));
+			  		chart2.draw(dataTable2, option2);               
+				}
+			);
+			
+			//draw combo charts - demo the use of events handling
+			TestSimon.GoogleChartsController.getProcessedDataSetForEventHandler(			
+				function(result, event) {
+				
+					var dataTable3 = new google.visualization.DataTable();					
+					dataTable3.addColumn('string', 'Reason');
+		            dataTable3.addColumn('number', 'Count');
+		            
+		            for (var i = 0; i < result.mainReasonsList.length; i++){
+			            var p = result.mainReasonsList[i]; 
+			            dataTable3.addRow([p.chartLabel, p.dataValue]);
+		        	}
+		        	
+		        	var option3 = {
+                    	title: 'Main Reasons',
+                    	backgroundColor: 'transparent',
+						width   : 600,
+                    	height  : 300,
+		                chartArea: {
+			            	top: 40,
+			                width: "80%",
+			                height: "85%"
+			             }			 
+                   	};
+                 		            
+		            var chart3 = new google.visualization.PieChart(document.getElementById('mainChart'));
+		        	chart3.draw(dataTable3, option3);	
+		        	
+		        	addEventListnerToChart(chart3, dataTable3);
+		        	createSubreasonCharts(result.subReasonsMap);
+		        	
+		        	var refresh = document.createElement("input");
+			            
+				    refresh.type = "button";
+				    refresh.value = "Back";
+				    refresh.setAttribute("class","refreshButton");
+				    refresh.onclick = function() { 
+				    	document.getElementById('mainChart').style.display = 'inline-block';
+				    	document.getElementById('Invoicing').style.display = 'none';
+				    	document.getElementById('Odering').style.display   = 'none';
+				    	document.getElementById('Pricing').style.display   = 'none';
+				    };							  
+				    document.getElementById('refreshButton').appendChild(refresh);		
+				}
+			);
+			
+			//draw column chart and integrate html component on the top of it
+			TestSimon.GoogleChartsController.getProcessedDataSetForColumnChart (			
+				function(result, event) {
+					var dataTable3 = new google.visualization.DataTable();
+		            dataTable3.addColumn('string', 'Year');
+		            dataTable3.addColumn('number', 'Sales');
+		            dataTable3.addColumn('number', 'Expenses');
+		            dataTable3.addColumn('number', 'Profit');
+		            
+		            var chartHeaderElement = initChartHeader($("#barChart"));
+		            
+		            for(var i = 0; i < result.length; i++){
+			            var p = result[i]; 
+			            dataTable3.addRow([ p.chartLabel, p.value1, p.value2, p.value3]);
+			            addChartHeader(chartHeaderElement, p.core );
+		        	}
+		        			        	
+					var option = {
+						title   : '',
+						width   : 600,
+                    	height  : 300,
+                		isStacked: true,
+		                backgroundColor: 'transparent',
+			            chartArea: {
+			            	top: 40,
+			                width: "80%",
+			                height: "85%"
+			             },
+			            colors: ['#2B908F' , '#AAEEEE' , '#90EE7E'],
+			            legend: { position: 'none'},
+					};
+
+	
+			  		var chart4 = new google.visualization.ColumnChart(document.getElementById('barChart'));
+			  		chart4.draw(dataTable3, option);					
+				}
+				
+			);			
+		}
+		
+		function addEventListnerToChart(mainChart, data) {
+	    	google.visualization.events.addListener(mainChart, 'select', function() {
+				var selection = mainChart.getSelection();
+				var message   = '';
+					
+				for (var i = 0; i < selection.length; i++) {
+					var item = selection[i];
+					if (item.row != null && item.column != null) {
+						var str = data.getFormattedValue(item.row, item.column);
+						message = str;
+					} else if (item.row != null) {			
+						var str = data.getFormattedValue(item.row, 0);
+						message = str;
+					} else if (item.column != null) {
+						var str = data.getFormattedValue(0, item.column);
+					  	message = str;
+					}
+				}
+					
+				if (message == '') {
+					message = 'nothing';
+				}
+				
+				var rcIdNew = message;
+				
+				document.getElementById('mainChart').style.display = 'none';	
+				document.getElementById(rcIdNew).style.display     = 'inline-block';
+				
+				mainChart.setSelection();			        												
+			}); 
+        }
+        
+        function createSubreasonCharts(subReasonsMap) {
+        	var subreasons1 = new google.visualization.DataTable();
+        	subreasons1.addColumn('string', 'Reason');
+            subreasons1.addColumn('number', 'Count');
+            
+            var key = 'Invoicing';
+                        
+            var options = {
+              	title: 'Subreasons for ' + key,
+              	backgroundColor: 'transparent',
+				width   : 600,
+                height  : 300,
+                chartArea: {
+	            	top: 40,
+	                width: "80%",
+	                height: "85%"
+	            }		
+            }; 
+          
+            for(var i = 0; i < subReasonsMap[key].length; i++) {
+	            var p = subReasonsMap[key][i];
+	            subreasons1.addRow([p.chartLabel, p.dataValue]);
+            }
+            
+            var subChart1 = new google.visualization.PieChart(document.getElementById(key));
+     		subChart1.draw(subreasons1, options);	
+     		document.getElementById(key).style.display = 'none';
+     		
+     		var subreasons2 = new google.visualization.DataTable();
+        	subreasons2.addColumn('string', 'Reason');
+            subreasons2.addColumn('number', 'Count');
+     		
+     		key = 'Odering';
+     		
+     		options = {
+              	title: 'Subreasons for ' + key,
+              	backgroundColor: 'transparent',
+				width   : 600,
+                height  : 300,
+                chartArea: {
+	            	top: 40,
+	                width: "80%",
+	                height: "85%"
+	            }
+            }; 
+     		
+     		for(var i = 0; i < subReasonsMap[key].length; i++){
+	            var p = subReasonsMap[key][i];
+	            subreasons2.addRow([p.chartLabel, p.dataValue]);
+            }
+     		
+     		var subChart2 = new google.visualization.PieChart(document.getElementById(key));
+     		subChart2.draw(subreasons2, options);
+     		document.getElementById(key).style.display = 'none';
+     		
+     		var subreasons3 = new google.visualization.DataTable();
+        	subreasons3.addColumn('string', 'Reason');
+            subreasons3.addColumn('number', 'Count');
+     		
+     		key = 'Pricing';
+     		
+     		options = {
+              	title: 'Subreasons for ' + key,
+              	backgroundColor: 'transparent',
+				width   : 600,
+                height  : 300,
+                chartArea: {
+	            	top: 40,
+	                width: "80%",
+	                height: "85%"
+	            }
+            }; 
+     		
+     		for(var i = 0; i < subReasonsMap[key].length; i++){
+	            var p = subReasonsMap[key][i];
+	            subreasons3.addRow([p.chartLabel, p.dataValue]);
+            }
+     		
+     		var subChart3 = new google.visualization.PieChart(document.getElementById(key));
+     		subChart3.draw(subreasons3, options);	
+     		document.getElementById(key).style.display = 'none';        
+        } 	
+
+		function initChartHeader(chartdiv) {
+			return $('<table class="chartheader"><tr class="headerrow"></tr></table>').insertBefore(chartdiv);
+		}
+
+		function addChartHeader(headerElem, n) {
+		    $(headerElem.find(".headerrow")).append('<td><strong>N:</strong><br />'+n+'</td>');			
+		}		
+    </script>
+    
+	<apex:form >
+        <apex:pageBlock title="Google Charts - Examples">
+        
+			<apex:outputPanel styleClass="pageBlockSection" layout="block">
+            	<apex:pageBlockSection title="Using Combo Charts" columns="2">
+	            	<apex:pageBlockSection columns="1">
+	            		
+						<div id="comboChart1"></div>	
+						<div class="textCenterStyle"> 
+							<b> After labeling the vertical axes</b> 
+						</div>					
+					</apex:pageBlockSection>
+					
+					<apex:pageBlockSection columns="1">
+						
+						<div id="comboChart2"></div>						
+						<div class="textCenterStyle"> 
+							<b> With out labeling the vertical axes and html text on tool-tip content</b> 
+						</div>
+					</apex:pageBlockSection>
+            	</apex:pageBlockSection>
+            	
+            	<apex:pageBlockSection columns="2">
+	           		<apex:pageBlockSection title="Using Google Charts Events" columns="1">
+	           			
+	            		<div id="refreshButton"></div>
+						<div id="mainChart"></div>
+						<div id="Invoicing"></div>
+						<div id="Odering"></div>
+						<div id="Pricing"></div>
+						<div class="textCenterStyle">
+							<b> Load sub charts by using event handler</b> 
+						</div>
+					</apex:pageBlockSection>
+					<apex:pageBlockSection title="Integrate html components to the chart" columns="1">				
+						
+						<div id="barChart"></div>	
+						<div class="textCenterStyle">
+							<b> In this sample we have added HTML chart header on the top of column chart</b> 
+						</div>
+					</apex:pageBlockSection>	
+            	</apex:pageBlockSection>
+            </apex:outputPanel>	            
+        </apex:pageBlock>
+    </apex:form>
+    
+</apex:page>
