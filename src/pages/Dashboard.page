@@ -1,3 +1,11 @@
+<!-- 
+/******************************************
+* Author       : Imalka Hemachandra
+* Description  : Dashboard page
+* Created Date : 2015-03-27
+*******************************************/
+-->
+
 <apex:page controller="GoogleChartsController">
 
 	<script type="text/javascript" src="https://www.google.com/jsapi"></script>

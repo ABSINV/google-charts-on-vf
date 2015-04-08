@@ -1,3 +1,9 @@
+/******************************************
+* Author       : Imalka Hemachandra
+* Description  : Controller for dashboard
+* Created Date : 2015-03-27
+*******************************************/
+
 global class GoogleChartsController {
 
 	global class eventHandler {
